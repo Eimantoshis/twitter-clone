@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query"; 
 
+
 const Sidebar = () => {
 
 	const queryClient = useQueryClient();
@@ -34,7 +35,7 @@ const Sidebar = () => {
 		
 	})
 
-	const {data: authUser} = useQuery({queryKey: ['authUser']})
+	const {data: authUser} = useQuery({queryKey: ["authUser"]})
 
 	return (
 		<div className='md:flex-[2_2_0] w-18 max-w-52'>
