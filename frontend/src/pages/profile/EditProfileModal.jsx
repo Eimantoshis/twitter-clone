@@ -1,11 +1,7 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-hot-toast";
-import { set } from "mongoose";
-
-
-const EditProfileModal = ({authUser}) => {
-	const queryClient = useQueryClient();
+import { useEffect, useState } from "react";
+import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
+import { useNavigate } from "react-router-dom";
+const EditProfileModal = ({ authUser }) => {
 	const [formData, setFormData] = useState({
 		fullName: "",
 		username: "",
@@ -16,34 +12,8 @@ const EditProfileModal = ({authUser}) => {
 		currentPassword: "",
 	});
 
-	const {mutate: updateProfile, isPending: isUpdatingProfile} = useMutation({
-		mutationFn: async() => {
-			try {
-				const res = await fetch(`/api/users/update`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body : JSON.stringify(formData),
-				})
-				const data = await res.json();
-				if (!res.ok) throw new Error(data.error || "Failed to update profile");
-				return data;
-			} catch (error) {
-				throw new Error(error.message);
-			}
-		},
-		onSuccess: () => {
-			toast.success("Profile updated successfully!");
-			Promise.all([
-				queryClient.invalidateQueries({queryKey: ["authUser"]}),
-				queryClient.invalidateQueries({queryKey: ["userProfile"]}),
-			])
-		},
-		onError: (error) => {
-			toast.error(error.message);
-		}
-	})
+	const { updateProfile, isUpdatingProfile } = useUpdateUserProfile();
+	const navigate = useNavigate();
 
 	const handleInputChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -59,9 +29,28 @@ const EditProfileModal = ({authUser}) => {
 				link: authUser.link,
 				newPassword: "",
 				currentPassword: "",
-			})
+			});
+			
 		}
-	}, [authUser])
+
+	}, [authUser]);
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		const originalUsername = authUser.username;
+
+		try {
+			const updatedUser = await updateProfile(formData);
+
+			document.getElementById("edit_profile_modal").close();
+
+			if (updatedUser.username !== originalUsername) {
+				navigate(`/profile/${updatedUser.username}`);
+			}
+		} catch (error) {
+			// Error should already be caught by the hook
+		}
+	}
 
 	return (
 		<>
@@ -76,10 +65,7 @@ const EditProfileModal = ({authUser}) => {
 					<h3 className='font-bold text-lg my-3'>Update Profile</h3>
 					<form
 						className='flex flex-col gap-4'
-						onSubmit={(e) => {
-							e.preventDefault();
-							updateProfile();
-						}}
+						onSubmit={handleSubmit}
 					>
 						<div className='flex flex-wrap gap-2'>
 							<input
