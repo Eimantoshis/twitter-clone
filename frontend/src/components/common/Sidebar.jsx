@@ -48,7 +48,7 @@ const Sidebar = () => {
 	const unreadCount = data?.count || 0;
 
 	const handleNotificationClick = () => {
-		setTimeout(() => refetch(), 500);
+		setTimeout(() => refetch(), 500); // needs to read notifcations first and then refetch
 	}
 
 
