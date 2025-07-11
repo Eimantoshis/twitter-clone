@@ -8,12 +8,20 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
+import { formatPostDate } from "../../utils/date";
 
 
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
 	const queryClient = useQueryClient();
 	const authUser = queryClient.getQueryData(["authUser"]);
+
+	const postOwner = post.user;
+	const isLiked = post.likes.includes(authUser?._id);
+	const isMyPost = authUser?._id === post.user._id;
+
+	const formattedDate = formatPostDate(post.createdAt);
+
 	const {mutate: deletePost, isPending: isDeleting} = useMutation({
 		mutationFn: async () => {
 			try {
@@ -69,14 +77,37 @@ const Post = ({ post }) => {
 			toast.error(error.message);
 		}
 	})
+	
+	const {mutate: commentPost, isPending: isCommenting} = useMutation({
+		mutationFn: async () => {
+			try {
+				const res = await fetch(`/api/posts/comment/${post._id}`, {
+					method: "Post",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ text: comment }),
+				});
 
-	const postOwner = post.user;
-	const isLiked = post.likes.includes(authUser?._id);
-	const isMyPost = authUser?._id === post.user._id;
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || "Failed to post a comment");
+				return data;
+			} catch (error) {
+				throw new Error(error);
+			}
+		},
+		onSuccess: () => {
+			toast.success("Comment posted successfully!");
+			setComment("");
+			// TODO improve UX by updating only the post comments
+			queryClient.invalidateQueries({queryKey: ["posts"]});
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		}
+	})
 
-	const formattedDate = "1h";
 
-	const isCommenting = false;
 
 	const handleDeletePost = () => {
 		deletePost();
@@ -84,6 +115,8 @@ const Post = ({ post }) => {
 
 	const handlePostComment = (e) => {
 		e.preventDefault();
+		if (isCommenting) return;
+		commentPost();
 	};
 
 	const handleLikePost = () => {
