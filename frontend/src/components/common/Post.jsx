@@ -99,12 +99,9 @@ const Post = ({ post }) => {
 		onSuccess: (updatedPost) => {
 			toast.success("Comment posted successfully!");
 			setComment("");
-			//queryClient.invalidateQueries({queryKey: ["posts"]});
-			// TODO improve UX by updating only the post comments
 			queryClient.setQueryData(["posts"], (oldData) => {
 				return oldData.map(p => {
 					if (p._id === post._id) {
-						console.log("UPDATED");
 						return updatedPost;
 					}
 					return p;
@@ -112,6 +109,36 @@ const Post = ({ post }) => {
 			})
 
 
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		}
+	})
+
+	const {mutate: deleteComment, isPending: isDeletingComment} = useMutation({
+		mutationFn: async (commentId) => {
+			try {
+				const res = await fetch (`/api/posts/comment/${post._id}/${commentId}`, {
+					method: "DELETE",
+				});
+				const data = await res.json();
+
+				if (!res.ok) throw new Error(data.error || "Failed to delete comment");
+				return data;
+			} catch (error) {
+				throw new Error(error);
+			}
+		},
+		onSucces: (updatedPost) => {
+			toast.success("Comment deleted successfully!");
+			queryClient.setQueryData(["posts"], (oldData) => {
+				return oldData.map(p => {
+					if (p._id === post._id) {
+						return updatedPost;
+					}
+					return p;
+				})
+			})
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -129,6 +156,10 @@ const Post = ({ post }) => {
 		if (isCommenting) return;
 		commentPost();
 	};
+
+	const handleDeleteComment = (commendId) => {
+		deleteComment(commendId);
+	}
 
 	const handleLikePost = () => {
 		if(isLiking) return;
@@ -206,6 +237,20 @@ const Post = ({ post }) => {
 														<span className='text-gray-700 text-sm'>
 															@{comment.user.username}
 														</span>
+														{/*Show delete button only if the comment belongs to the user*/}
+														{authUser?._id === comment.user._id && (
+															<div className='flex justify-end flex-1'>
+																{!isDeletingComment && (
+																	<FaTrash
+																		className='cursor-pointer hover:text-red-500 text-gray-500 w-3 h-3'
+																		onClick= { () => handleDeleteComment(comment._id)}
+																	/>
+																)}
+																{isDeletingComment && (
+																	<LoadingSpinner size='sm'/>
+																)}
+															</div>
+														)}
 													</div>
 													<div className='text-sm'>{comment.text}</div>
 												</div>

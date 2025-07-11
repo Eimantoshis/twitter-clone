@@ -13,7 +13,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 const Sidebar = () => {
 
 	const queryClient = useQueryClient();
-	const { data: authUser } = queryClient.getQueryData(["authUser"]);
+	const authUser = queryClient.getQueryData(["authUser"]);
 	const {mutate: logoutMutation} = useMutation({
 		mutationFn: async() => {
 			try {
