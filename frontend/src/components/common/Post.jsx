@@ -82,7 +82,7 @@ const Post = ({ post }) => {
 		mutationFn: async () => {
 			try {
 				const res = await fetch(`/api/posts/comment/${post._id}`, {
-					method: "Post",
+					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
 					},
@@ -96,11 +96,22 @@ const Post = ({ post }) => {
 				throw new Error(error);
 			}
 		},
-		onSuccess: () => {
+		onSuccess: (updatedPost) => {
 			toast.success("Comment posted successfully!");
 			setComment("");
+			//queryClient.invalidateQueries({queryKey: ["posts"]});
 			// TODO improve UX by updating only the post comments
-			queryClient.invalidateQueries({queryKey: ["posts"]});
+			queryClient.setQueryData(["posts"], (oldData) => {
+				return oldData.map(p => {
+					if (p._id === post._id) {
+						console.log("UPDATED");
+						return updatedPost;
+					}
+					return p;
+				})
+			})
+
+
 		},
 		onError: (error) => {
 			toast.error(error.message);
