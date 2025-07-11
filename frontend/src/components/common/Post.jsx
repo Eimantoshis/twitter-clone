@@ -60,13 +60,13 @@ const Post = ({ post }) => {
 			}
 
 		},
-		onSuccess: () => {
+		onSuccess: (updatedLikes) => {
 			// this is not the best UX
 			//queryClient.invalidateQueries({queryKey: ["posts"]});
 			// instead, update the cache directly for that post
 			queryClient.setQueryData(["posts"], (oldData) => {
 				return oldData.map(p => {
-					if (p.id === post._id) {
+					if (p._id === post._id) {
 						return {...p, likes: updatedLikes}
 					}
 					return p;

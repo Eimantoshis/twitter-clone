@@ -36,6 +36,22 @@ const Sidebar = () => {
 		
 	})
 
+	const {data, refetch} = useQuery({
+		queryKey: ['unreadCount'],
+		queryFn: async () => {
+			const res = await fetch('/api/notifications/unread-count');
+			return res.json();
+		},
+		refetchInterval: 10000 // refetch every 10 seconds
+	});
+
+	const unreadCount = data?.count || 0;
+
+	const handleNotificationClick = () => {
+		setTimeout(() => refetch(), 500);
+	}
+
+
 
 	return (
 		<div className='md:flex-[2_2_0] w-18 max-w-52'>
@@ -56,12 +72,26 @@ const Sidebar = () => {
 					<li className='flex justify-center md:justify-start'>
 						<Link
 							to='/notifications'
-							className='flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer'
+							onClick={handleNotificationClick}
+							className='flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer relative'
 						>
+							<div className="relative">
 							<IoNotifications className='w-6 h-6' />
+							{unreadCount > 0 && (
+								<span className="
+								absolute -top-1 -right-1
+								w-4 h-4 bg-red-500 
+								rounded-full flex items-center justify-center
+								text-white text-xs
+								">
+								{unreadCount > 9 ? '9+' : unreadCount}
+								</span>
+							)}
+							</div>
 							<span className='text-lg hidden md:block'>Notifications</span>
 						</Link>
 					</li>
+
 
 					<li className='flex justify-center md:justify-start'>
 						<Link
