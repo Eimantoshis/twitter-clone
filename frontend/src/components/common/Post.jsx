@@ -107,8 +107,6 @@ const Post = ({ post }) => {
 					return p;
 				})
 			})
-
-
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -129,7 +127,7 @@ const Post = ({ post }) => {
 				throw new Error(error);
 			}
 		},
-		onSucces: (updatedPost) => {
+		onSuccess: (updatedPost) => {
 			toast.success("Comment deleted successfully!");
 			queryClient.setQueryData(["posts"], (oldData) => {
 				return oldData.map(p => {
@@ -226,16 +224,22 @@ const Post = ({ post }) => {
 											<div key={comment._id} className='flex gap-2 items-start'>
 												<div className='avatar'>
 													<div className='w-8 rounded-full'>
-														<img
-															src={comment.user.profileImg || "/avatar-placeholder.png"}
-														/>
+														<div className='avatar'>
+															<Link to={`/profile/${postOwner.username}`} className='w-8 rounded-full overflow-hidden'>
+																<img src={postOwner.profileImg || "/avatar-placeholder.png"} />
+															</Link>
+														</div>
 													</div>
 												</div>
-												<div className='flex flex-col'>
-													<div className='flex items-center gap-1'>
-														<span className='font-bold'>{comment.user.fullName}</span>
-														<span className='text-gray-700 text-sm'>
-															@{comment.user.username}
+												<div className='flex flex-col flex-1'>
+													<div className='flex items-center gap-2'>
+														<Link to={`/profile/${postOwner.username}`} className='font-bold'>
+															{postOwner.fullName}
+														</Link>
+														<span className='text-gray-700 flex gap-1 text-sm'>
+															<Link to={`/profile/${comment.user.username}`}>@{comment.user.username}</Link>
+															<span>·</span>
+															<span>{formatPostDate(comment.createdAt)}</span>
 														</span>
 														{/*Show delete button only if the comment belongs to the user*/}
 														{authUser?._id === comment.user._id && (
