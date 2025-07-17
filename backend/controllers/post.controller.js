@@ -90,6 +90,17 @@ export const commentOnPost = async (req, res) => {
                 select: "-password"
             });
 
+        if (post.user.toString() !== userId.toString()) {
+                // Send notification to the post owner
+                const notification = new Notification({
+                    type: "comment",
+                    from: userId,
+                    to: post.user,
+                });
+
+                await notification.save();
+            }
+
         res.status(200).json(updatedPost);
     } catch (error) {
         console.log("Error in commnetOnPost controller", error.message);
@@ -214,6 +225,10 @@ export const getPost = async (req, res) => {
             path: "comments.user",
             select: "-password"
         })
+
+        if (!post) {
+            return res.status(404).json({error: "Post not found"});
+        }
         res.status(200).json(post);
     } catch (error) {
         console.log("Error in getPost controller", error.message);

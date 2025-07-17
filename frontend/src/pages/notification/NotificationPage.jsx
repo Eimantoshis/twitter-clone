@@ -4,6 +4,7 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
+import { IoMdText } from "react-icons/io";
 import { useQuery, useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 
@@ -48,6 +49,19 @@ const NotificationPage = () => {
 		
 	})
 
+	const getNotificationText = (type) => {
+		switch (type) {
+			case "follow":
+				return " followed you";
+			case "like":
+				return " liked your post";
+			case "comment":
+				return " commented on your post";
+			default:
+				return "";
+		}
+	}
+
 
 
 	return (
@@ -85,10 +99,13 @@ const NotificationPage = () => {
 					<div className="flex gap-2 p-4 relative">
 						
 						{notification.type === "follow" && (
-							<FaUser className="w-7 h-7 text-primary" />
+							<FaUser className="w-7 h-7 text-blue-500" />
 						)}
 						{notification.type === "like" && (
 							<FaHeart className="w-7 h-7 text-red-500" />
+						)}
+						{notification.type === "comment" && (
+							<IoMdText className="w-7 h-7 text-green-500" />
 						)}
 						
 						<Link to={`/profile/${notification.from.username}`}>
@@ -101,7 +118,8 @@ const NotificationPage = () => {
 							</div>
 							<div className="flex gap-1">
 								<span className="font-bold">@{notification.from.username}</span>
-								{notification.type === "follow" ? "followed you" : "liked your post"}
+								{getNotificationText(notification.type)} 
+
 							</div>
 						</Link>
 					</div>
