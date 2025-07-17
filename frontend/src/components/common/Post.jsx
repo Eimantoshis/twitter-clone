@@ -143,6 +143,29 @@ const Post = ({ post }) => {
 		}
 	})
 
+	const fetchAndUpdatePost = async (postId) => {
+		try {
+			const res = await fetch(`/api/posts/${postId}`);
+			const data = await res.json();
+
+			if (!res.ok) throw new Error(data.error || "Failed to fetch post data");
+
+			// Update the post in the cache
+			queryClient.setQueryData(["posts"], (oldData) => {
+				return oldData.map(p => {
+					if (p._id === postId) {
+						return data; 
+					}
+					return p;
+				})
+			})
+
+			console.log(data);
+		} catch (error) {
+			console.error("Error fetching post data:", error);
+
+		}
+	}
 
 
 	const handleDeletePost = () => {
@@ -203,7 +226,11 @@ const Post = ({ post }) => {
 						<div className='flex gap-4 items-center w-2/3 justify-between'>
 							<div
 								className='flex gap-1 items-center cursor-pointer group'
-								onClick={() => document.getElementById("comments_modal" + post._id).showModal()}
+								onClick={() => {
+									fetchAndUpdatePost(post._id);
+									document.getElementById("comments_modal" + post._id).showModal();
+									}
+								}
 							>
 								<FaRegComment className='w-4 h-4  text-slate-500 group-hover:text-sky-400' />
 								<span className='text-sm text-slate-500 group-hover:text-sky-400'>
@@ -225,16 +252,16 @@ const Post = ({ post }) => {
 												<div className='avatar'>
 													<div className='w-8 rounded-full'>
 														<div className='avatar'>
-															<Link to={`/profile/${postOwner.username}`} className='w-8 rounded-full overflow-hidden'>
-																<img src={postOwner.profileImg || "/avatar-placeholder.png"} />
+															<Link to={`/profile/${comment.user.username}`} className='w-8 rounded-full overflow-hidden'>
+																<img src={comment.user.profileImg || "/avatar-placeholder.png"} />
 															</Link>
 														</div>
 													</div>
 												</div>
 												<div className='flex flex-col flex-1'>
 													<div className='flex items-center gap-2'>
-														<Link to={`/profile/${postOwner.username}`} className='font-bold'>
-															{postOwner.fullName}
+														<Link to={`/profile/${comment.user.username}`} className='font-bold'>
+															{comment.user.fullName}
 														</Link>
 														<span className='text-gray-700 flex gap-1 text-sm'>
 															<Link to={`/profile/${comment.user.username}`}>@{comment.user.username}</Link>

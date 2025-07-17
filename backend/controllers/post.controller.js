@@ -195,13 +195,28 @@ export const getAllPosts = async (req, res) => {
             select: "-password"
         });
 
-        if (posts.length === 0) {
-            res.status(200).json([]);
-        }
 
         res.status(200).json(posts);
     } catch (error) {
         console.log("Error in getAllPosts controller", error.message);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
+
+export const getPost = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id)
+        .populate({
+            path: "user",
+            select: "-password"
+        })
+        .populate({
+            path: "comments.user",
+            select: "-password"
+        })
+        res.status(200).json(post);
+    } catch (error) {
+        console.log("Error in getPost controller", error.message);
         res.status(500).json({error: "Internal server error"});
     }
 }
