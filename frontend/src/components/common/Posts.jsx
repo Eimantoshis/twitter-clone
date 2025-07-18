@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 
-const Posts = ({feedType, username, userId}) => {
+const Posts = ({feedType, username, userId, postId}) => {
 
 	const getPostEndpoint = () => {
 		switch (feedType) {
@@ -16,8 +16,11 @@ const Posts = ({feedType, username, userId}) => {
 				return `/api/posts/user/${username}`;
 			case "likes":
 				return `/api/posts/likes/${userId}`;
+			case "notificationPost":
+				return `/api/posts/${postId}`;
 			default:
 				return "/api/posts/all";
+
 			
 		}
 	}

@@ -4,14 +4,16 @@ import { FaRegHeart } from "react-icons/fa";
 import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
 import { formatPostDate } from "../../utils/date";
+import { useEffect } from "react";
 
 
-const Post = ({ post }) => {
+const Post = ({ post, isCommentNotif }) => {
+	const [searchParams, setSearchParams] = useSearchParams();
 	const [comment, setComment] = useState("");
 	const queryClient = useQueryClient();
 	const authUser = queryClient.getQueryData(["authUser"]);
@@ -21,6 +23,19 @@ const Post = ({ post }) => {
 	const isMyPost = authUser?._id === post.user._id;
 
 	const formattedDate = formatPostDate(post.createdAt);
+
+	useEffect(() => {
+		const shouldOpenComments = searchParams.get("openComments");
+		if (shouldOpenComments === 'true') {
+			fetchAndUpdatePost(post._id);
+			setTimeout(() => {
+				document.getElementById("comments_modal" + post._id).showModal();
+			}, 100);
+			// Remove the parameter from URL to prevent reopening on refresh
+			searchParams.delete('openComments');
+			setSearchParams(searchParams);
+		}
+	}, [post._id, searchParams, setSearchParams]);
 
 	const {mutate: deletePost, isPending: isDeleting} = useMutation({
 		mutationFn: async () => {

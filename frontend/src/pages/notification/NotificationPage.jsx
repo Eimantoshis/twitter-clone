@@ -5,8 +5,10 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
 import { IoMdText } from "react-icons/io";
+import { IoNewspaper } from "react-icons/io5";
 import { useQuery, useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+import { formatPostDate } from "../../utils/date";
 
 const NotificationPage = () => {
 
@@ -108,24 +110,37 @@ const NotificationPage = () => {
 							<IoMdText className="w-7 h-7 text-green-500" />
 						)}
 						
-						<Link to={`/profile/${notification.from.username}`}>
-							<div className="avatar">
-								<div className="w-8 rounded-full">
+						<Link to={`/profile/${notification.from.username}`} className="flex flex-col">
+							<div className="flex items-center gap-4">
+								<div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
 									<img 
 										src={notification.from.profileImg || "/avatar-placeholder.png"} 
+										className="w-full h-full object-cover"
 									/>
 								</div>
+								<div className="text-gray-700">{formatPostDate(notification.createdAt)}</div>
 							</div>
 							<div className="flex gap-1">
 								<span className="font-bold">@{notification.from.username}</span>
 								{getNotificationText(notification.type)} 
-
 							</div>
 						</Link>
+						{(notification.type === "comment" || notification.type === "like") && (
+							<Link
+								className="ml-auto"
+								to={`/post/${notification.post}${notification.type === "comment" ? '?openComments=true' : ''}`}
+							>
+								<IoNewspaper className="w-12 h-12 text-gray-500 "/>
+							</Link>
+						)}
+
+						
 					</div>
+					
 				</div>
 			))}
 			</div>
+			
 		</>
 	);
 };

@@ -20,6 +20,11 @@ const notificationSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    post: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post',
+        // not required for followed
+    },
 }, {timestamps: true});
 
 const Notifcation = mongoose.model('Notification', notificationSchema);
